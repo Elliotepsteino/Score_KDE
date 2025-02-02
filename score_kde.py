@@ -195,7 +195,7 @@ def run_score_informed_kde_experiment(
 
     KL_score_informed = estimate_KL_score_informed().item()
 
-    # 7) Optional plotting (CHANGED HERE: ADDED SILVERMAN SUBPLOT)
+    
     if do_plot:
         num_grid = 80
         grid_x = torch.linspace(-3, 7, num_grid)
@@ -216,7 +216,6 @@ def run_score_informed_kde_experiment(
         lphat_grid = torch.stack(lphat_grid).reshape(num_grid, num_grid)
         phat_grid = torch.exp(lphat_grid)
 
-        # NEW: Evaluate Silverman KDE for plotting
         silverman_vals = []
         for pt in points_2d:
             val = kde_estimate_density(pt, data, silverman_h)

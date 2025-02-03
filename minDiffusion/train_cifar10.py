@@ -15,13 +15,15 @@ from sympy import Ci
 from mindiffusion.unet import NaiveUnet
 from mindiffusion.ddpm import DDPM
 
+BASE_DIR = "/pscratch/sd/j/jwl50/Score_KDE/minDiffusion"
+WANDB_PATH = f"{BASE_DIR}/wandb"
 
 def train_cifar10(
-    n_epoch: int = 100, device: str = "cuda:0", load_pth: Optional[str] = None
+    n_epoch: int = 10000, device: str = "cuda:0", load_pth: Optional[str] = None
 ) -> None:
     # Initialize wandb tracking
     wandb.init(
-        dir="./wandb",
+        dir=WANDB_PATH,
         project="minDiffusion",
         name="cifar10",
         config={
@@ -35,7 +37,7 @@ def train_cifar10(
     ddpm = DDPM(eps_model=NaiveUnet(3, 3, n_feat=128), betas=(1e-4, 0.02), n_T=1000)
 
     if load_pth is not None:
-        ddpm.load_state_dict(torch.load("ddpm_cifar.pth"))
+        ddpm.load_state_dict(torch.load(f"{BASE_DIR}/ddpm_cifar.pth"))
 
     ddpm.to(device)
     wandb.watch(ddpm, log="all")
@@ -87,7 +89,7 @@ def train_cifar10(
             })
 
             # save model
-            torch.save(ddpm.state_dict(), f"./ddpm_cifar.pth")
+            torch.save(ddpm.state_dict(), f"{BASE_DIR}/ddpm_cifar.pth")
 
 
 if __name__ == "__main__":

@@ -12,4 +12,4 @@
 module load python
 conda activate /pscratch/sd/j/jwl50/Score_KDE/minDiffusion/.pyenv
 
-python train_twomoons.py
+python train_2d.py

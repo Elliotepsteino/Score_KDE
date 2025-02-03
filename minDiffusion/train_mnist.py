@@ -17,6 +17,8 @@ from mindiffusion.ddpm import DDPM
 
 from datasets import load_dataset
 
+BASE_DIR = "/pscratch/sd/j/jwl50/Score_KDE/minDiffusion"
+WANDB_PATH = f"{BASE_DIR}/wandb"
 
 # Define a PyTorch Dataset wrapper for the Hugging Face MNIST dataset
 class HFDataset(Dataset):
@@ -37,11 +39,11 @@ class HFDataset(Dataset):
     
 
 def train_mnist(
-    n_epoch: int = 100, device: str = "cuda:0", load_pth: Optional[str] = None
+    n_epoch: int = 10000, device: str = "cuda:0", load_pth: Optional[str] = None
 ) -> None:
     # Initialize wandb tracking
     wandb.init(
-        dir="./wandb",
+        dir=WANDB_PATH,
         project="minDiffusion",
         name="mnist",
         config={
@@ -55,7 +57,7 @@ def train_mnist(
     ddpm = DDPM(eps_model=NaiveUnet(1, 1, n_feat=128, num_downsamples=1), betas=(1e-4, 0.02), n_T=1000)
 
     if load_pth is not None:
-        ddpm.load_state_dict(torch.load("ddpm_mnist.pth"))
+        ddpm.load_state_dict(torch.load(f"{BASE_DIR}/ddpm_mnist.pth"))
 
     ddpm.to(device)
     wandb.watch(ddpm, log="all")
@@ -103,7 +105,7 @@ def train_mnist(
             })
 
             # save model
-            torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
+            torch.save(ddpm.state_dict(), f"{BASE_DIR}/ddpm_mnist.pth")
 
 
 if __name__ == "__main__":

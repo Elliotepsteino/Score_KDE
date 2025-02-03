@@ -1,5 +1,6 @@
 from sorcerun.sacred_utils import run_sacred_experiment
 from density_estimators import DENSITY_ESTIMATORS
+from score_estimators import SCORE_ESTIMATORS
 from data import generate_data, true_density_mix, evaluate_estimator
 
 
@@ -8,6 +9,8 @@ def adapter(config, _run):
     density_estimator_config = config.get("density_estimator_config", {})
     data_config = config["data_config"]
     eval_config = config["eval_config"]
+    score_estimator_name = config["score_estimator_name"]
+    score_estimator_config = config.get("score_estimator_config", {})
     true_density_config = config["true_density_config"]
 
     if density_estimator_name not in DENSITY_ESTIMATORS:
@@ -15,8 +18,11 @@ def adapter(config, _run):
 
     data = generate_data(**data_config)
 
+    score_estimator = SCORE_ESTIMATORS[score_estimator_name]
+    score_fn = score_estimator(data, **score_estimator_config)
+
     density_estimator = DENSITY_ESTIMATORS[density_estimator_name]
-    estimator = density_estimator(data, **density_estimator_config)
+    estimator = density_estimator(data, **density_estimator_config, score_fn=score_fn)
 
     true_density = true_density_mix(**true_density_config)
 

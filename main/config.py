@@ -29,10 +29,16 @@ true_density_config = dict(
     covs=covs,
 )
 
+score_estimator_name = "true_score"
+score_estimator_config = dict(
+    means=means,
+    covs=covs,
+    eps=1e-3,
+)
+
 
 config = {
     "density_estimator_name": density_estimator_name,
-    #
     "density_estimator_config": density_estimator_config,
     #
     "data_config": data_config,
@@ -40,6 +46,9 @@ config = {
     "eval_config": eval_config,
     #
     "true_density_config": true_density_config,
+    #
+    "score_estimator_name": score_estimator_name,
+    "score_estimator_config": score_estimator_config,
     #
     "commit_hash": get_commit_hash(repo),
     "main_tree_hash": get_tree_hash(repo, "main"),

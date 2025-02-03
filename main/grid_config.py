@@ -21,7 +21,7 @@ dirty = is_dirty(repo)
 grid_id = (f"{time_str}--{commit_hash}--dirty={dirty}",)
 
 
-def make_config(n, means, covs):
+def make_config(n, means, covs, de):
     dc = data_config.copy()
     dc["n_samples"] = n
     dc["means"] = means
@@ -31,7 +31,7 @@ def make_config(n, means, covs):
     true_dc["covs"] = covs
 
     c = {
-        "density_estimator_name": "silverman",
+        "density_estimator_name": de,
         "density_estimator_config": density_estimator_config,
         #
         "data_config": dc,
@@ -51,12 +51,23 @@ ns = [100, 1000, 10000]  # , 100000]
 
 meanss = (
     ((-2,), (2,)),
-    ((-1,), (1,)),
+    # ((-1,), (1,)),
     ((-0.1,), (0.1,)),
 )
 covss = (
     (((1,),), ((1,),)),
-    (((0.5,),), ((0.5,),)),
+    # (((0.5,),), ((0.5,),)),
     (((0.1,),), ((0.1,),)),
 )
-configs = [make_config(n, m, c) for n in ns for m in meanss for c in covss]
+
+density_estimators = (
+    "silverman",
+    "score_informed_torch",
+)
+configs = [
+    make_config(n, m, c, de)
+    for n in ns
+    for m in meanss
+    for c in covss
+    for de in density_estimators
+]

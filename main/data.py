@@ -44,7 +44,7 @@ def evaluate_estimator(
 ):
     X_grid = np.linspace(-5, 5, n_eval)
     true_probs = true_density(X_grid).reshape(-1)
-    kde_probs = estimator(X_grid)
+    kde_probs = estimator(X_grid).reshape(-1)
 
     epsilon = 1e-10
     kl = entropy(true_probs + epsilon, kde_probs + epsilon)

@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
 from sklearn.neighbors import KernelDensity
@@ -53,10 +54,78 @@ def score_informed_estimator(data, score_fn=None, dim=1, eps=1e-3):
     return estimator
 
 
+def score_informed_kde(X, score_fn=None, n_iter=2, device="cpu"):
+    """
+    Adaptive KDE using either:
+    1. Provided score function (with auto-diff derivatives)
+    2. Finite difference estimates (fallback)
+
+    Args:
+        X: Input data (numpy array)
+        score_fn: PyTorch model taking (N,1) tensor, returning scores
+        n_iter: Number of bandwidth refinement iterations
+        device: Compute device ('cpu' or 'cuda')
+
+    Returns:
+        Optimal bandwidths (numpy array)
+    """
+    X_np = X.copy()
+    n = len(X)
+    h_i = np.full(n, 1.06 * np.std(X) * n ** (-1 / 5))
+
+    # Convert to PyTorch tensor if using score_fn
+    if score_fn is not None:
+        X_tensor = torch.tensor(X, dtype=torch.float32, device=device).view(-1, 1)
+        X_tensor.requires_grad_(True)
+
+    for _ in range(n_iter):
+        s = np.zeros(n)
+        s_prime = np.zeros(n)
+
+        if score_fn is not None:
+            # Batch compute scores and derivatives
+            with torch.set_grad_enabled(True):
+                scores = score_fn(X_tensor).squeeze()
+                grad_outputs = torch.ones_like(scores)
+                gradients = torch.autograd.grad(
+                    scores,
+                    X_tensor,
+                    grad_outputs=grad_outputs,
+                    create_graph=True,
+                    retain_graph=True,
+                )[0].squeeze()
+
+            s = scores.detach().cpu().numpy()
+            s_prime = gradients.detach().cpu().numpy()
+        else:
+            raise NotImplementedError(
+                "Finite difference score estimation not implemented"
+            )
+
+        # Bandwidth update logic
+        f_X = np.array(
+            [
+                np.mean(
+                    np.exp(-0.5 * ((X - x) / h_i) ** 2) / (h_i * np.sqrt(2 * np.pi))
+                )
+                for x in X
+            ]
+        )
+        f_X = np.clip(f_X, 1e-10, None)
+
+        h_i_new = (1 / (2 * np.sqrt(np.pi) * n)) ** (1 / 5) * (
+            f_X / ((f_X * (s_prime + s**2)) ** 2 + 1e-10)
+        ) ** (1 / 5)
+        h_i = 0.5 * h_i_new + 0.5 * h_i  # Dampened update
+
+    return h_i
+
+
 # %%
 DENSITY_ESTIMATORS = {
     "kde": lambda data: gaussian_kde(data),
     "silverman": silverman_estimator,
     "variable_bandwidth": variable_bandwidth_estimator,
     "score_informed": score_informed_estimator,
+    "score_informed_torch": score_informed_kde,
 }

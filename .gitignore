@@ -2,6 +2,7 @@
 minDiffusion/.pyenv/
 minDiffusion/contents/
 minDiffusion/data/
+minDiffusion/**/*.pth
 
 **/__pycache__/
 **/__pycache__

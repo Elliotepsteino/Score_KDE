@@ -24,6 +24,8 @@ grid_id = (f"{time_str}--{commit_hash}--dirty={dirty}",)
 def make_config(n, means, covs):
     dc = data_config.copy()
     dc["n_samples"] = n
+    dc["means"] = means
+    dc["covs"] = covs
     true_dc = true_density_config.copy()
     true_dc["means"] = means
     true_dc["covs"] = covs

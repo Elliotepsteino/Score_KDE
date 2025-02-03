@@ -1,0 +1,7 @@
+# Diffusion
+minDiffusion/.pyenv/
+minDiffusion/contents/
+minDiffusion/data/
+
+**/__pycache__/
+**/__pycache__

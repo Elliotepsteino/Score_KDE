@@ -118,7 +118,13 @@ def score_informed_kde(X, score_fn=None, n_iter=2, device="cpu"):
         ) ** (1 / 5)
         h_i = 0.5 * h_i_new + 0.5 * h_i  # Dampened update
 
-    return h_i
+    # return a function that computes the KDE
+    def kde(x):
+        return np.mean(
+            [norm.pdf(x, loc=xi, scale=hi) for xi, hi in zip(X_np, h_i)], axis=0
+        )
+
+    return kde
 
 
 # %%

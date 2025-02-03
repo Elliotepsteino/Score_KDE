@@ -98,9 +98,12 @@ def score_informed_kde(X, score_fn=None, n_iter=2, device="cpu"):
             s = scores.detach().cpu().numpy()
             s_prime = gradients.detach().cpu().numpy()
         else:
-            raise NotImplementedError(
-                "Finite difference score estimation not implemented"
-            )
+            # Finite difference score estimates
+            for i in range(n):
+                s[i] = (norm.pdf(X[i], loc=X, scale=h_i) * np.log(X[i] - X)).sum()
+                s_prime[i] = (
+                    norm.pdf(X[i], loc=X, scale=h_i) * (X - X[i]) / h_i**2
+                ).sum()
 
         # Bandwidth update logic
         f_X = np.array(

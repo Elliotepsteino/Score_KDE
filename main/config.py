@@ -21,6 +21,7 @@ data_config = dict(
 eval_config = dict(n_eval=10000)
 
 density_estimator_name = "silverman"
+density_estimator_name = "score_informed_torch"
 density_estimator_config = dict()
 
 true_density_config = dict(

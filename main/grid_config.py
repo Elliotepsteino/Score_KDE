@@ -11,6 +11,7 @@ from config import (
     eval_config,
     true_density_config,
     density_estimator_config,
+    score_estimator_config,
 )
 
 repo = get_repo()
@@ -37,6 +38,9 @@ def make_config(n, means, covs, de):
         "data_config": dc,
         "eval_config": eval_config,
         "true_density_config": true_dc,
+        #
+        "score_estimator_name": "true_score",
+        "score_estimator_config": score_estimator_config,
         #
         "commit_hash": commit_hash,
         "main_tree_hash": main_tree_hash,

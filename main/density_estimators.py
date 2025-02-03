@@ -5,7 +5,7 @@ from scipy.stats import norm
 from sklearn.neighbors import KernelDensity
 
 
-def silverman_estimator(data, dim=1):
+def silverman_estimator(data, dim=1, **kwargs):
     """Classic Silverman's rule KDE"""
     n = len(data)
     h = 1.06 * np.std(data) * n ** (-1 / (4 + dim))

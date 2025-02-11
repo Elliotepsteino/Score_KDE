@@ -3,7 +3,7 @@ minDiffusion/.pyenv/
 minDiffusion/contents/
 minDiffusion/data/
 minDiffusion/wandb/
-minDiffusion/**/*.pth
+minDiffusion/**/*.ipynb
 
 **/__pycache__/
 **/__pycache__

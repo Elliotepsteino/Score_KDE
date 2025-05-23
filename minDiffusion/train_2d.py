@@ -32,7 +32,11 @@ class EpsMLP(nn.Module):
     """
     def forward(self, x, t):
         x = x.view(x.size(0), -1) # (B, 2)
+        if len(t.shape) > 1:
+            t = t.reshape(-1)
+        print(f"x shape: {x.shape}, t shape: {t.shape}")
         x_time = torch.cat((x, t.unsqueeze(-1)), dim=1) # (B, 3)
+        print(f"x_time shape: {x_time.shape}")
         return self.net(x_time).reshape(x.size(0), 2, 1, 1) # (B, 2, 1, 1)
 
 
@@ -73,7 +77,8 @@ def train_2d(n_epoch: int = 10000, device: str = "cuda:0", load_pth: Optional[st
         pbar = tqdm(dataloader)
         loss_ema = None
         for x in pbar:
-            # x: (B, 2)
+            # x: (B, 2, 1, 1)
+            ddpm.train()
             x = x.to(device)
             optim.zero_grad()
             loss = ddpm(x)
@@ -85,27 +90,28 @@ def train_2d(n_epoch: int = 10000, device: str = "cuda:0", load_pth: Optional[st
             pbar.set_description(f"loss: {loss_ema:.4f}")
             optim.step()
 
-        ddpm.eval()
-        with torch.no_grad():
-            # Sample 8 points; note shape argument is (2,) for 2D.
-            samples = ddpm.sample(8, (2,), device)
-            samples_np = samples.cpu().numpy()
+            if i % 1000 == 0:
+                ddpm.eval()
+                with torch.no_grad():
+                    # Sample 8 points; note shape argument is (2,) for 2D.
+                    samples = ddpm.sample(8, (2,), device).unsqueeze(-1).unsqueeze(-1)
+                    samples_np = samples.cpu().numpy()
 
-            # Plot the generated samples as a scatter.
-            plt.figure()
-            plt.scatter(samples_np[:, 0], samples_np[:, 1], c='blue', marker='o')
-            plt.title(f"Epoch {i} Samples")
-            plot_path = f"{PLOT_PATH}/ddpm_sample_2d_epoch{i}.png"
-            plt.savefig(plot_path)
-            plt.close()
+                    # Plot the generated samples as a scatter.
+                    plt.figure()
+                    plt.scatter(samples_np[:, 0], samples_np[:, 1], c='blue', marker='o')
+                    plt.title(f"Epoch {i} Samples")
+                    plot_path = f"{PLOT_PATH}/ddpm_sample_2d_epoch{i}.png"
+                    plt.savefig(plot_path)
+                    plt.close()
 
-            wandb.log({
-                "epoch": i,
-                "loss": loss_ema,
-                "sample_scatter": wandb.Image(plot_path)
-            })
+                    wandb.log({
+                        "epoch": i,
+                        "loss": loss_ema,
+                        "sample_scatter": wandb.Image(plot_path)
+                    })
 
-            torch.save(ddpm.state_dict(), f"{BASE_DIR}/ddpm_2d.pth")
+                    torch.save(ddpm.state_dict(), f"{BASE_DIR}/ddpm_2d.pth")
 
 
 if __name__ == "__main__":

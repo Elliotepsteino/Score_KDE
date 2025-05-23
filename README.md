@@ -33,5 +33,7 @@ To generate Figure 11 and Figure 12, run the following command:
 ```
 python visualize_score.py
 ```
+### Diffusion Model Experiments
+The details for the diffusion model experiments are the [Diffusion README](./minDiffusion/README.md).
 
 

@@ -141,10 +141,18 @@ def kl_divergence_laplace(x_data, params, bandwidth, nsamples=10000):
 ###############################################################################
 # 7) Run Laplace experiments
 ###############################################################################
-def run_laplace_experiments():
+def run_experiments(n_list, n_seeds):
+    """
+    Run all experiments with given parameters
+    
+    Args:
+        n_list: List of n values for scaling experiments
+        n_seeds: Number of seeds for averaging results
+    """
     import numpy as np
-    # 7A) example_comparison_kdes_laplace.pdf
-    noise_levels = [0.0,2.0,4.0,8.0]
+    
+    # Example comparison KDEs
+    noise_levels = [0.0, 2.0, 4.0, 8.0]
     n_example = 200
     seed_example = 0
 
@@ -203,15 +211,13 @@ def run_laplace_experiments():
     plt.savefig("figures/example_comparison_kdes_laplace.pdf", bbox_inches="tight")
     plt.show()
 
-
-    # 7B) kl_diff_histograms_laplace.pdf
-    N_SEEDS = 100
-    N_DATA  = 200
+    # KL difference histograms
+    N_DATA = 200
     mise_diff_arrays = []
 
     for i, params in enumerate(mixture_params_list):
         diffs = []
-        for seed in range(N_SEEDS):
+        for seed in range(n_seeds):
             np.random.seed(seed)
             x_data = sample_laplace_mixture(N_DATA, params)
 
@@ -250,27 +256,19 @@ def run_laplace_experiments():
     plt.savefig("figures/kl_diff_histograms_laplace.pdf", bbox_inches="tight")
     plt.show()
 
-
-    # 7C) scaling_experiment_kl_laplace.pdf
-    #n_list = [10,20,50,100,200,500]
-    n_list = [10,20,50,100,200,500,1000,2000,5000,10000]
-    N_SEEDS_SCALING = 50
-
+    # Initialize arrays for scaling experiments
     avg_kl_silver   = np.zeros((len(mixture_params_list), len(n_list)))
     avg_mise_silver = np.zeros((len(mixture_params_list), len(n_list)))
-
     avg_kl_deb_0    = np.zeros((len(mixture_params_list), len(n_list)))
     avg_mise_deb_0  = np.zeros((len(mixture_params_list), len(n_list)))
-
     avg_kl_deb_2    = np.zeros((len(mixture_params_list), len(n_list)))
     avg_mise_deb_2  = np.zeros((len(mixture_params_list), len(n_list)))
-
     avg_kl_deb_4    = np.zeros((len(mixture_params_list), len(n_list)))
     avg_mise_deb_4  = np.zeros((len(mixture_params_list), len(n_list)))
-
     avg_kl_deb_8    = np.zeros((len(mixture_params_list), len(n_list)))
     avg_mise_deb_8  = np.zeros((len(mixture_params_list), len(n_list)))
 
+    # Run scaling experiments
     for i, params in enumerate(mixture_params_list):
         for j, n_data in enumerate(n_list):
             kl_silv_vals   = []
@@ -280,7 +278,7 @@ def run_laplace_experiments():
             kl_4_vals, mise_4_vals  = [], []
             kl_8_vals, mise_8_vals  = [], []
 
-            for seed in range(N_SEEDS_SCALING):
+            for seed in range(n_seeds):
                 np.random.seed(seed)
                 x_data = sample_laplace_mixture(n_data, params)
 
@@ -331,7 +329,7 @@ def run_laplace_experiments():
             avg_kl_deb_8[i,j] = np.mean(kl_8_vals)
             avg_mise_deb_8[i,j] = np.mean(mise_8_vals)
 
-
+    # Plot KL results
     fig, axes = plt.subplots(1,3, figsize=(18,6), sharey=False)
 
     # ### rename "Score-Deb(std=)" => "SD-KDE, std=.."
@@ -375,7 +373,7 @@ def run_laplace_experiments():
     plt.savefig("figures/scaling_experiment_kl_laplace.pdf", bbox_inches="tight")
     plt.show()
 
-    # 9B) scaling_experiment_mise_laplace.pdf
+    # Plot MISE results
     fig, axes = plt.subplots(1,3, figsize=(18,6), sharey=False)
     methods_mise = [
         ("Silverman KDE",         avg_mise_silver, 'o-b'),
@@ -417,5 +415,28 @@ def run_laplace_experiments():
     plt.savefig("figures/scaling_experiment_mise_laplace.pdf", bbox_inches="tight")
     plt.show()
 
-if __name__=="__main__":
-    run_laplace_experiments()
+def main():
+    """Main function with argument parsing"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Run Laplace KDE experiments')
+    parser.add_argument('--n_seeds', type=int, default=50,
+                      help='Number of seeds for averaging results (default: 50)')
+    parser.add_argument('--n_list', type=str, 
+                      default='10,20,50,100,200,500,1000,2000,5000,10000',
+                      help='Comma-separated list of n values (default: 10,20,50,...,10000)')
+    
+    args = parser.parse_args()
+    # python shrinkage_kde_laplace.py --n_seeds 50 --n_list "10,20,50,100"
+    # Parse n_list from string
+    n_list = [int(n) for n in args.n_list.split(',')]
+    
+    # Create figures directory if it doesn't exist
+    if not os.path.exists("figures"):
+        os.makedirs("figures")
+    
+    # Run all experiments
+    run_experiments(n_list, args.n_seeds)
+
+if __name__ == "__main__":
+    main()

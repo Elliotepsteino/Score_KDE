@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-
+import os
 ###############################################################################
 # Matplotlib settings for publication-quality plots
 ###############################################################################
@@ -29,6 +29,9 @@ mixture_params_list = [
     # Mixture 3
     {'pi': 0.5, 'mu1':  0, 'sigma1': 0.4, 'mu2':  1.5, 'sigma2': 1.5},
 ]
+
+if not os.path.exists("figures"):
+    os.makedirs("figures")
 
 ###############################################################################
 # 2) Laplace PDF and Mixture
@@ -249,6 +252,7 @@ def run_laplace_experiments():
 
 
     # 7C) scaling_experiment_kl_laplace.pdf
+    #n_list = [10,20,50,100,200,500]
     n_list = [10,20,50,100,200,500,1000,2000,5000,10000]
     N_SEEDS_SCALING = 50
 
